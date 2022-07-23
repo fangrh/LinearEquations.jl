@@ -4,6 +4,87 @@ export @linearequation
 using Printf
 
 """
+ρ2vec(ρ::Matrix{ComplexF64})::Vector{Float64}
+
+Vectorize the density matrix `\rho`, please refer [vec2ρ](@Ref)
+
+# Arguments
+- `ρ::Matrix{ComplexF64}`: Density matrix
+
+# Examples:
+
+```julia-repl
+julia> begin
+	ρ = zeros(3, 3) * 1im
+	ρ[1, 1] = 1/2
+	ρ[2, 2] = 1/2
+	ρ[1, 2] = 1 + 2im
+	ρ[2, 1] = 1 - 2im
+	ρ[3, 3] = 0
+end
+julia> vec = ρ2vec(ρ)
+```
+"""
+function ρ2vec(ρ::Matrix{ComplexF64})::Vector{Float64}
+	sz = size(ρ)[1]
+	vec = zeros(sz*sz)
+	for i = 1:sz
+		vec[i] = real(ρ[i, i])
+	end
+	index = sz + 1
+	for i = 1:(sz-1)
+		for j = (i+1) : sz
+			vec[index] = real(ρ[i, j])
+			vec[index+1] = imag(ρ[i, j])
+			index += 2
+		end
+	end
+	vec
+end;
+
+"""
+vec2ρ(vec::Vector{Float64})::Matrix{ComplexF64}
+
+Reconstruct density matrix from a vector, please refer [ρ2vec](@Ref)
+
+# Arguments
+
+- `vec::Vector{Float64}`: Vectorized of density matrix
+
+# Examples
+```julia-repl
+julia> begin
+	ρ = zeros(3, 3) * 1im
+	ρ[1, 1] = 1/2
+	ρ[2, 2] = 1/2
+	ρ[1, 2] = 1 + 2im
+	ρ[2, 1] = 1 - 2im
+	ρ[3, 3] = 0
+end
+julia> vec = ρ2vec(ρ)
+julia> ρ2 = vec2ρ(vec)
+julia> ρ2 - ρ
+```
+"""
+function vec2ρ(vec::Vector{Float64})::Matrix{ComplexF64}
+	sz = floor(Int64, sqrt(size(vec)[1]))
+	ρ = zeros(sz, sz) * 1im
+	for i = 1:sz
+		ρ[i, i] = vec[i]
+	end
+	index = sz + 1
+	for i = 1:(sz - 1)
+		for j = (i+1) : sz
+			ρ[i, j] = vec[index] + 1im*vec[index + 1]
+			ρ[j, i] = vec[index] - 1im*vec[index + 1]
+			index += 2
+		end
+	end
+	ρ
+end;
+
+
+"""
 @targetEquation(targetEquationName, sz, targetEquation, paramDisc, args...)
 
 get the time evolution form of an Master equation
@@ -56,7 +137,7 @@ julia> paramDisc = quote
 			Ω = (t < prepare) | ((t>prepare) & ((t-prepare-τ/2)%T>lowPulse)) ? Ωamp : 0
 			δ = p[9]
 			end
-julia> @targetEquation master_equation! 3 _∂tρ paramDisc B Ω δ
+julia> @linearequation master_equation! 3 _∂tρ paramDisc B Ω δ
 ```
 """
 macro linearequation(targetEquationName, sz, targetEquation, paramDisc, args...)
