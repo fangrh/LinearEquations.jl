@@ -1,4 +1,4 @@
-module targetEquations
+module LinearEquations
 export @linearmasterequation
 
 using Printf
