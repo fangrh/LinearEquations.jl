@@ -1,0 +1,3 @@
+[deps]
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+LinearEquations = "61d91b44-0d68-47b5-9a58-bd457a118ee3"
