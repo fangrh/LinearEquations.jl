@@ -1,5 +1,5 @@
 module LinearEquations
-export @linearmasterequation
+export @linearequation
 
 using Printf
 
@@ -59,7 +59,7 @@ julia> paramDisc = quote
 julia> @targetEquation master_equation! 3 _∂tρ paramDisc B Ω δ
 ```
 """
-macro linearmasterequation(targetEquationName, sz, targetEquation, paramDisc, args...)
+macro linearequation(targetEquationName, sz, targetEquation, paramDisc, args...)
 	sysSize = eval(sz) * eval(sz)
 	argSize = length(args)
 	exprs = []
