@@ -1,7 +1,24 @@
 module LinearEquations
 export @linearequation
+export @testmacro
 
 using Printf
+
+
+"""
+@testmacro funName
+
+This macro is used for test some features
+"""
+macro testmacro(funName)
+	args = [1, 2, 3]
+	# eval(funName)()
+	println(funName)
+	expr1 = quote
+		$funName($args...)
+	end
+	esc(expr1)
+end
 
 """
 ρ2vec(ρ::Matrix{ComplexF64})::Vector{Float64}
@@ -85,13 +102,13 @@ end;
 
 
 """
-@targetEquation(targetEquationName, sz, targetEquation, paramDisc, args...)
+@linearequation(linearEquationName, sz, targetEquation, paramDisc, args...)
 
 get the time evolution form of an Master equation
 
 # Arguments:
 
-- `targetEquationName`: The name of linear equation you want to generate
+- `linearEquationName`: The name of linear equation you want to generate
 - `sz`: The size of the system, number of energy levels
 - `targetEquation`: The target equation you want to linearized
 - `paramDisc`: External code to convert the array p to parameters required
@@ -140,7 +157,7 @@ julia> paramDisc = quote
 julia> @linearequation master_equation! 3 _∂tρ paramDisc B Ω δ
 ```
 """
-macro linearequation(targetEquationName, sz, targetEquation, paramDisc, args...)
+macro linearequation(linearEquationName, sz, targetEquation, paramDisc, args...)
 	sysSize = eval(sz) * eval(sz)
 	argSize = length(args)
 	exprs = []
@@ -209,7 +226,7 @@ macro linearequation(targetEquationName, sz, targetEquation, paramDisc, args...)
 	end
 
 	quote
-		function $(esc(targetEquationName))(du, u, p, t)
+		function $(esc(linearEquationName))(du, u, p, t)
 			$(exprs...)
 		end
 	end
