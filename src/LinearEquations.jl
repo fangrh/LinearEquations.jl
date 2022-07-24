@@ -1,6 +1,6 @@
 module LinearEquations
-export @linearequation
-export @testmacro
+export genLinearEquation
+# export @testmacro
 
 using Printf
 
@@ -10,15 +10,15 @@ using Printf
 
 This macro is used for test some features
 """
-macro testmacro(funName)
-	args = [1, 2, 3]
-	# eval(funName)()
-	println(funName)
-	expr1 = quote
-		$funName($args...)
-	end
-	esc(expr1)
-end
+# macro testmacro(funName)
+# 	args = [1, 2, 3]
+# 	# expr1 = quote
+# 	# 	$funName($args...)
+# 	# end
+# 	# esc(expr1)
+# 	b = esc(:($funName($args...)))
+# 	println(b)
+# end
 
 """
 ρ2vec(ρ::Matrix{ComplexF64})::Vector{Float64}
@@ -102,9 +102,9 @@ end;
 
 
 """
-@linearequation(linearEquationName, sz, targetEquation, paramDisc, args...)
+genLinearEquation(linearEquationName, sz, targetEquation, paramDisc, args...)
 
-get the time evolution form of an Master equation
+get the time evolution form of an Master equation as linear equation form
 
 # Arguments:
 
@@ -154,11 +154,11 @@ julia> paramDisc = quote
 			Ω = (t < prepare) | ((t>prepare) & ((t-prepare-τ/2)%T>lowPulse)) ? Ωamp : 0
 			δ = p[9]
 			end
-julia> @linearequation master_equation! 3 _∂tρ paramDisc B Ω δ
+julia> expr = genLinearEquation(:master_equation!, 3, _∂tρ, paramDisc, :B, :Ω, :δ)
 ```
 """
-macro linearequation(linearEquationName, sz, targetEquation, paramDisc, args...)
-	sysSize = eval(sz) * eval(sz)
+function genLinearEquation(linearEquationName, sz, targetEquation, paramDisc, args...)
+	sysSize = sz * sz
 	argSize = length(args)
 	exprs = []
 	dρExprStr = [@sprintf "du[%d] = " i for i in 1:sysSize] # 演化的结果
@@ -169,8 +169,8 @@ macro linearequation(linearEquationName, sz, targetEquation, paramDisc, args...)
 			vec = zeros(sysSize)
 			vec[j] = 1
 			ρ = vec2ρ(vec)
-			dρ = eval(targetEquation)(ρ, argVec...)
-			dρ0 = eval(targetEquation)(ρ, zeros(argSize)...)
+			dρ = targetEquation(ρ, argVec...)
+			dρ0 = targetEquation(ρ, zeros(argSize)...)
 			dρVec = ρ2vec(dρ-dρ0)	
 			for k = 1:sysSize
 				if dρVec[k] > 0 # 如果不等于零，那么主方程就要加上相应的值
@@ -193,7 +193,7 @@ macro linearequation(linearEquationName, sz, targetEquation, paramDisc, args...)
 		vec[j] = 1
 		ρ = vec2ρ(vec)
 		argVec = zeros(argSize)
-		dρ = eval(targetEquation)(ρ, argVec...)
+		dρ = targetEquation(ρ, argVec...)
 		dρVec = ρ2vec(dρ)
 		# println(dρVec)
 		# println(dρ)
@@ -217,7 +217,7 @@ macro linearequation(linearEquationName, sz, targetEquation, paramDisc, args...)
 	# for i=1:sysSize
 	# 	println(dρExprStr[i])
 	# end
-	push!(exprs, eval(paramDisc))
+	push!(exprs, paramDisc)
 	for l = 1:sysSize
 		if dρExprStr[l] != (@sprintf "du[%d] = " l)  # 如果最终没有加入，那么就不写进来
 			expri = Meta.parse(dρExprStr[l])
@@ -226,7 +226,7 @@ macro linearequation(linearEquationName, sz, targetEquation, paramDisc, args...)
 	end
 
 	quote
-		function $(esc(linearEquationName))(du, u, p, t)
+		function $(linearEquationName)(du, u, p, t)
 			$(exprs...)
 		end
 	end
