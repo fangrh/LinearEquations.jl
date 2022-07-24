@@ -1,5 +1,5 @@
 module LinearEquations
-export genLinearEquation
+export genLinearEquation, vec2ρ, ρ2vec
 # export @testmacro
 
 using Printf
