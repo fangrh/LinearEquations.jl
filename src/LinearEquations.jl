@@ -232,4 +232,75 @@ function genLinearEquation(linearEquationName, sz, targetEquation, paramDisc, ar
 	end
 end
 
+"""
+@getcoefficient(coe, sz, masterFun, args...)
+
+get the coefficient of an Master equation
+
+# Arguments:
+
+- `coe`: The coefficient dictionary.
+- `sz`: The size of the system, number of energy levels
+- `masterFun`: The master equation
+
+# Examples:
+
+```julia-repl
+julia> function _getHamiltonian(B::Float64, Ω::ComplexF64, δ::Float64, rabiRatio::Float64)
+	Γ::Float64 = 2π*5.746e6  # Decay Rate of Excited State
+    μ::Float64 = 2π*0.7e6
+    H = zeros(3, 3) * 0im
+    H[1, 1] = μ * B
+    H[2, 2] = -μ * B + δ
+    H[1, 3] = Ω / 2 * rabiRatio
+    H[2, 3] = Ω / 2
+    H[3, 1] = Ω' / 2 * rabiRatio
+    H[3, 2] = Ω' / 2
+    H[3, 3] = -1im/2 * Γ
+    return H
+end
+julia> function _∂tρ(ρ::Matrix{ComplexF64}, B::Float64, ReΩ::Float64, ImΩ::Float64, δ::Float64)
+	Γ::Float64 = 2π*5.746e6  # Decay Rate of Excited State
+	Ω = ReΩ + 1im*ImΩ
+	rabiRatio::Float64 = 1
+    H = _getHamiltonian(B, Ω, δ, rabiRatio)
+    ∂tρ = -1im * (H*ρ - ρ*H')
+    ∂tρ[1, 1] = ∂tρ[1, 1] + ρ[3, 3] * Γ * rabiRatio^2 / (rabiRatio^2 + 1)
+    ∂tρ[2, 2] = ∂tρ[2, 2] + ρ[3, 3] * Γ / (rabiRatio^2 + 1)
+    ∂tρ
+end
+julia> getcoefficient(3, 4, _∂tρ)
+```
+"""
+function getCoefficient(sz, argSize, masterFun)
+	sysSize = sz^2
+	coeM_arr = []
+	#-----------------------------
+	p = zeros(argSize)
+	coeM0 = zeros(argSize, argSize) 
+	for i = 1:sysSize
+		u = zeros(sysSize)
+		u[i] = 1.0
+		ρ = vec2ρ(u)
+		dρ = masterFun(ρ, p...)
+		coeM0[:, i] = ρ2vec(dρ)
+	end
+	push!(coeM_arr, coeM0)
+	#-----------------------------
+	for a = 1:argSize
+		p = zeros(argSize)
+		p[a] = 1.0
+		coeM = zeros(argSize, argSize) 
+		for i = 1:sysSize
+			u = zeros(sysSize)
+			u[i] = 1.0
+			ρ = vec2ρ(u)
+			dρ = masterFun(ρ, p...)
+			coeM[:, i] = ρ2vec(dρ)
+		end
+		push!(coeM_arr, coeM-coeM0)
+	end
+	return coeM_arr
+end
+
 end
