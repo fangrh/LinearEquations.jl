@@ -37,7 +37,7 @@ julia&gt; paramDisc = quote
 			Ω = (t &lt; prepare) | ((t&gt;prepare) &amp; ((t-prepare-τ/2)%T&gt;lowPulse)) ? Ωamp : 0
 			δ = p[9]
 			end
-julia&gt; expr = genLinearEquation(:master_equation!, 3, _∂tρ, paramDisc, :B, :Ω, :δ)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/fangrh/LinearEquations.jl/blob/5960a35433650dfecb8d75d51433b04605369971/src/LinearEquations.jl#L104-L159">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="LinearEquations.getCoefficient-Tuple{Any, Any, Any}" href="#LinearEquations.getCoefficient-Tuple{Any, Any, Any}"><code>LinearEquations.getCoefficient</code></a> — <span class="docstring-category">Method</span></header><section><div><p>getCoefficient(sz, argSize, masterFun)</p><p>get the coefficient of an Master equation</p><p><strong>Arguments:</strong></p><ul><li><code>coe</code>: The coefficient dictionary.</li><li><code>sz</code>: The size of the system, number of energy levels</li><li><code>masterFun</code>: The master equation</li></ul><p><strong>Examples:</strong></p><pre><code class="language-julia-repl hljs">julia&gt; function _getHamiltonian(B::Float64, Ω::ComplexF64, δ::Float64, rabiRatio::Float64)
+julia&gt; expr = genLinearEquation(:master_equation!, 3, _∂tρ, paramDisc, :B, :Ω, :δ)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/fangrh/LinearEquations.jl/blob/9a56dec2d8b98f9577848f1b563b349e68a225ee/src/LinearEquations.jl#L104-L159">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="LinearEquations.getCoefficient-Tuple{Any, Any, Any}" href="#LinearEquations.getCoefficient-Tuple{Any, Any, Any}"><code>LinearEquations.getCoefficient</code></a> — <span class="docstring-category">Method</span></header><section><div><p>getCoefficient(sz, argSize, masterFun)</p><p>get the coefficient of an Master equation</p><p><strong>Arguments:</strong></p><ul><li><code>coe</code>: The coefficient dictionary.</li><li><code>sz</code>: The size of the system, number of energy levels</li><li><code>masterFun</code>: The master equation</li></ul><p><strong>Examples:</strong></p><pre><code class="language-julia-repl hljs">julia&gt; function _getHamiltonian(B::Float64, Ω::ComplexF64, δ::Float64, rabiRatio::Float64)
 	Γ::Float64 = 2π*5.746e6  # Decay Rate of Excited State
     μ::Float64 = 2π*0.7e6
     H = zeros(3, 3) * 0im
@@ -50,17 +50,17 @@ julia&gt; expr = genLinearEquation(:master_equation!, 3, _∂tρ, paramDisc, :B,
     H[3, 3] = -1im/2 * Γ
     return H
 end
-julia&gt; function _∂tρ(ρ::Matrix{ComplexF64}, B::Float64, ReΩ::Float64, ImΩ::Float64, δ::Float64)
+julia&gt; function _∂tρ(ρ::Matrix{ComplexF64}, B::Float64, Ω::Float64, δ::Float64)
 	Γ::Float64 = 2π*5.746e6  # Decay Rate of Excited State
-	Ω = ReΩ + 1im*ImΩ
 	rabiRatio::Float64 = 1
-    H = _getHamiltonian(B, Ω, δ, rabiRatio)
-    ∂tρ = -1im * (H*ρ - ρ*H&#39;)
-    ∂tρ[1, 1] = ∂tρ[1, 1] + ρ[3, 3] * Γ * rabiRatio^2 / (rabiRatio^2 + 1)
-    ∂tρ[2, 2] = ∂tρ[2, 2] + ρ[3, 3] * Γ / (rabiRatio^2 + 1)
-    ∂tρ
+	Ωc = Ω*(1+0im)
+	H = _getHamiltonian(B, Ωc, δ, rabiRatio)
+	∂tρ = -1im * (H*ρ - ρ*H&#39;)
+	∂tρ[1, 1] = ∂tρ[1, 1] + ρ[3, 3] * Γ * rabiRatio^2 / (rabiRatio^2 + 1)
+	∂tρ[2, 2] = ∂tρ[2, 2] + ρ[3, 3] * Γ / (rabiRatio^2 + 1)
+	∂tρ
 end
-julia&gt; getcoefficient(3, 4, _∂tρ)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/fangrh/LinearEquations.jl/blob/5960a35433650dfecb8d75d51433b04605369971/src/LinearEquations.jl#L235-L274">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="LinearEquations.vec2ρ-Tuple{Vector{Float64}}" href="#LinearEquations.vec2ρ-Tuple{Vector{Float64}}"><code>LinearEquations.vec2ρ</code></a> — <span class="docstring-category">Method</span></header><section><div><p>vec2ρ(vec::Vector{Float64})::Matrix{ComplexF64}</p><p>Reconstruct density matrix from a vector, please refer <a href="@Ref">ρ2vec</a></p><p><strong>Arguments</strong></p><ul><li><code>vec::Vector{Float64}</code>: Vectorized of density matrix</li></ul><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; begin
+julia&gt; getCoefficient(3, 4, _∂tρ)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/fangrh/LinearEquations.jl/blob/9a56dec2d8b98f9577848f1b563b349e68a225ee/src/LinearEquations.jl#L235-L274">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="LinearEquations.vec2ρ-Tuple{Vector{Float64}}" href="#LinearEquations.vec2ρ-Tuple{Vector{Float64}}"><code>LinearEquations.vec2ρ</code></a> — <span class="docstring-category">Method</span></header><section><div><p>vec2ρ(vec::Vector{Float64})::Matrix{ComplexF64}</p><p>Reconstruct density matrix from a vector, please refer <a href="@Ref">ρ2vec</a></p><p><strong>Arguments</strong></p><ul><li><code>vec::Vector{Float64}</code>: Vectorized of density matrix</li></ul><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; begin
 	ρ = zeros(3, 3) * 1im
 	ρ[1, 1] = 1/2
 	ρ[2, 2] = 1/2
@@ -70,7 +70,7 @@ julia&gt; getcoefficient(3, 4, _∂tρ)</code></pre></div><a class="docs-sourcel
 end
 julia&gt; vec = ρ2vec(ρ)
 julia&gt; ρ2 = vec2ρ(vec)
-julia&gt; ρ2 - ρ</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/fangrh/LinearEquations.jl/blob/5960a35433650dfecb8d75d51433b04605369971/src/LinearEquations.jl#L62-L85">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="LinearEquations.ρ2vec-Tuple{Matrix{ComplexF64}}" href="#LinearEquations.ρ2vec-Tuple{Matrix{ComplexF64}}"><code>LinearEquations.ρ2vec</code></a> — <span class="docstring-category">Method</span></header><section><div><p>ρ2vec(ρ::Matrix{ComplexF64})::Vector{Float64}</p><p>Vectorize the density matrix <code>ho</code>, please refer <a href="@Ref">vec2ρ</a></p><p><strong>Arguments</strong></p><ul><li><code>ρ::Matrix{ComplexF64}</code>: Density matrix</li></ul><p><strong>Examples:</strong></p><pre><code class="language-julia-repl hljs">julia&gt; begin
+julia&gt; ρ2 - ρ</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/fangrh/LinearEquations.jl/blob/9a56dec2d8b98f9577848f1b563b349e68a225ee/src/LinearEquations.jl#L62-L85">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="LinearEquations.ρ2vec-Tuple{Matrix{ComplexF64}}" href="#LinearEquations.ρ2vec-Tuple{Matrix{ComplexF64}}"><code>LinearEquations.ρ2vec</code></a> — <span class="docstring-category">Method</span></header><section><div><p>ρ2vec(ρ::Matrix{ComplexF64})::Vector{Float64}</p><p>Vectorize the density matrix <code>ho</code>, please refer <a href="@Ref">vec2ρ</a></p><p><strong>Arguments</strong></p><ul><li><code>ρ::Matrix{ComplexF64}</code>: Density matrix</li></ul><p><strong>Examples:</strong></p><pre><code class="language-julia-repl hljs">julia&gt; begin
 	ρ = zeros(3, 3) * 1im
 	ρ[1, 1] = 1/2
 	ρ[2, 2] = 1/2
@@ -78,4 +78,4 @@ julia&gt; ρ2 - ρ</code></pre></div><a class="docs-sourcelink" target="_blank" 
 	ρ[2, 1] = 1 - 2im
 	ρ[3, 3] = 0
 end
-julia&gt; vec = ρ2vec(ρ)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/fangrh/LinearEquations.jl/blob/5960a35433650dfecb8d75d51433b04605369971/src/LinearEquations.jl#L23-L44">source</a></section></article></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.21 on <span class="colophon-date" title="Tuesday 2 August 2022 10:21">Tuesday 2 August 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+julia&gt; vec = ρ2vec(ρ)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/fangrh/LinearEquations.jl/blob/9a56dec2d8b98f9577848f1b563b349e68a225ee/src/LinearEquations.jl#L23-L44">source</a></section></article></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.21 on <span class="colophon-date" title="Tuesday 2 August 2022 11:07">Tuesday 2 August 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
