@@ -46,6 +46,7 @@ using Test
     expr1 = genLinearEquation(:master_equation!, 3, _∂tρ, paramDisc, :B, :Ω, :δ)
     println(expr1)
     eval(expr1)
+    coeM_arr = getCoefficient(3, 3, _∂tρ)
     # @linearequation2 master_equation! 3 _∂tρ paramDisc B Ω δ
 
     # function foo(args...)

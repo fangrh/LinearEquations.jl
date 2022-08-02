@@ -259,17 +259,17 @@ julia> function _getHamiltonian(B::Float64, Ω::ComplexF64, δ::Float64, rabiRat
     H[3, 3] = -1im/2 * Γ
     return H
 end
-julia> function _∂tρ(ρ::Matrix{ComplexF64}, B::Float64, ReΩ::Float64, ImΩ::Float64, δ::Float64)
+julia> function _∂tρ(ρ::Matrix{ComplexF64}, B::Float64, Ω::Float64, δ::Float64)
 	Γ::Float64 = 2π*5.746e6  # Decay Rate of Excited State
-	Ω = ReΩ + 1im*ImΩ
 	rabiRatio::Float64 = 1
-    H = _getHamiltonian(B, Ω, δ, rabiRatio)
-    ∂tρ = -1im * (H*ρ - ρ*H')
-    ∂tρ[1, 1] = ∂tρ[1, 1] + ρ[3, 3] * Γ * rabiRatio^2 / (rabiRatio^2 + 1)
-    ∂tρ[2, 2] = ∂tρ[2, 2] + ρ[3, 3] * Γ / (rabiRatio^2 + 1)
-    ∂tρ
+	Ωc = Ω*(1+0im)
+	H = _getHamiltonian(B, Ωc, δ, rabiRatio)
+	∂tρ = -1im * (H*ρ - ρ*H')
+	∂tρ[1, 1] = ∂tρ[1, 1] + ρ[3, 3] * Γ * rabiRatio^2 / (rabiRatio^2 + 1)
+	∂tρ[2, 2] = ∂tρ[2, 2] + ρ[3, 3] * Γ / (rabiRatio^2 + 1)
+	∂tρ
 end
-julia> getcoefficient(3, 4, _∂tρ)
+julia> getCoefficient(3, 4, _∂tρ)
 ```
 """
 function getCoefficient(sz, argSize, masterFun)
@@ -277,7 +277,7 @@ function getCoefficient(sz, argSize, masterFun)
 	coeM_arr = []
 	#-----------------------------
 	p = zeros(argSize)
-	coeM0 = zeros(argSize, argSize) 
+	coeM0 = zeros(sysSize, sysSize) 
 	for i = 1:sysSize
 		u = zeros(sysSize)
 		u[i] = 1.0
@@ -290,7 +290,7 @@ function getCoefficient(sz, argSize, masterFun)
 	for a = 1:argSize
 		p = zeros(argSize)
 		p[a] = 1.0
-		coeM = zeros(argSize, argSize) 
+		coeM = zeros(sysSize, sysSize)
 		for i = 1:sysSize
 			u = zeros(sysSize)
 			u[i] = 1.0
