@@ -233,7 +233,7 @@ function genLinearEquation(linearEquationName, sz, targetEquation, paramDisc, ar
 end
 
 """
-@getcoefficient(coe, sz, masterFun, args...)
+getCoefficient(sz, argSize, masterFun)
 
 get the coefficient of an Master equation
 
