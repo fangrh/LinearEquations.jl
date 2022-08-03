@@ -47,6 +47,7 @@ using Test
     println(expr1)
     eval(expr1)
     coeM_arr = getCoefficient(3, 3, _∂tρ)
+    println(coeM_arr)
     # @linearequation2 master_equation! 3 _∂tρ paramDisc B Ω δ
 
     # function foo(args...)
