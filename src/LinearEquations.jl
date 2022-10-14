@@ -269,7 +269,7 @@ julia> function _∂tρ(ρ::Matrix{ComplexF64}, B::Float64, Ω::Float64, δ::Flo
 	∂tρ[2, 2] = ∂tρ[2, 2] + ρ[3, 3] * Γ / (rabiRatio^2 + 1)
 	∂tρ
 end
-julia> getCoefficient(3, 4, _∂tρ)
+julia> getCoefficient(3, 3, _∂tρ)
 ```
 """
 function getCoefficient(sz, argSize, masterFun)
