@@ -239,8 +239,8 @@ get the coefficient of an Master equation
 
 # Arguments:
 
-- `coe`: The coefficient dictionary.
 - `sz`: The size of the system, number of energy levels
+- `argSize`: The number of argument.
 - `masterFun`: The master equation
 
 # Examples:
